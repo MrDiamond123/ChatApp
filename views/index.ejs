@@ -4,13 +4,13 @@
     <title>Simple Group Chat on Node.js</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font: 13px Helvetica, Arial; position: relative; min-height: 100vh;}
-        form { background: #fff; height: 2.5rem; position: absolute; bottom: 0; width: 100%; border-color: #000; border-top-style: solid; border-top-width: 1px;}
+        body { font: 13px Helvetica, Arial; position: relative; min-height: 100vh; background-color: lightslategray }
+        form { background: rgb(121, 118, 118); height: 2.5rem; position: absolute; bottom: 0; width: 100%; border-color: #000; border-top-style: solid; border-top-width: 1px;}
         form input { border-style: solid; border-width: 1px; padding: 10px; width: 85%; margin-right: .5%; }
         form button { width: 9%; background: rgb(86, 101, 235); border: none; padding: 10px; margin-left: 2%; }
         #messages { list-style-type: none; margin: 0; padding-bottom: 2.5rem; }
-        #messages li { padding: 5px 10px; }
-        #messages li:nth-child(odd) { background: #eee; }
+        #messages li { padding: 5px 10px; background: lightgray}
+        #messages li:nth-child(odd) { background: darkgray; }
 
     </style>
 
@@ -18,6 +18,7 @@
 
     <script src="../../socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="scripts/purify.min.js"></script>
   </head>
   <body>
     <ul id="messages"></ul>
@@ -26,6 +27,10 @@
     </form>
     <script>
             var socket = io.connect(location.host);
+            function clean(dirty) {
+              var clean = DOMPurify.sanitize(dirty);
+              return clean;
+            }
             // submit text message without reload/refresh the page
             $('form').submit(function(e){
                 e.preventDefault(); // prevents page reloading
@@ -34,9 +39,10 @@
                   command = command.substring(1, command.length)
                   if (command == "nick") {
                     var temp = prompt('Change your nickname!', username);
-                    if (typeof(temp) == 'undefined') {
+                    if (typeof(temp) == 'undefined' || typeof(temp) == "object") {
                       return
                     }
+                    username = temp
                     socket.emit('nickname', username);
                   } else {
                     socket.emit('command', command);
@@ -50,17 +56,17 @@
 
             // append the chat text message
             socket.on('chat_message', function(msg){
-                $('#messages').append($('<li>').html(msg));
+                $('#messages').append($('<li>').html(clean(msg)));
                 document.body.scrollIntoView(false);
             });
             socket.on('command_feedback', function(msg){
                 console.debug(msg)
-                $('#messages').append($('<li>').html(msg));
+                $('#messages').append($('<li>').html(clean(msg)));
                 document.body.scrollIntoView(false);
             });
             // append text if someone is online
             socket.on('is_online', function(username) {
-                $('#messages').append($('<li>').html(username));
+                $('#messages').append($('<li>').html(clean(username)));
                 document.body.scrollIntoView(false);
             });
             // ask username
