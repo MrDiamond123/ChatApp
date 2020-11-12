@@ -15,7 +15,7 @@ app.get('/', function(req, res) {
 });
 
 app.use('/scripts', express.static(__dirname + '/node_modules/dompurify/dist/'));
-
+app.use('/media', express.static(__dirname + '/media'));
 
 io.sockets.on('connection', function(socket) {
     socket.on('join', function(username) {

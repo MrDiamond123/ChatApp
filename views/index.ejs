@@ -65,12 +65,16 @@
                 $('#txt').val('');
                 return false;
             });
-
+            function soundGoBrrrr() {
+             var messageSound = new Audio("media/Message_Sound.wav");
+             messageSound.play();
+            }
             // append the chat text message
             socket.on('chat_message', function(msg){
                 $('#messages').append($('<li>').html(clean(msg)));
                 if (document.hidden) {
                   document.title = "New message!"
+                  soundGoBrrrr()
                 }
                 document.body.scrollIntoView(false);
             });
@@ -84,6 +88,7 @@
                 $('#messages').append($('<li>').html(clean(username)));
                 if (document.hidden) {
                   document.title = "Someone joined or left!"
+                  soundGoBrrrr();
                 }
                 document.body.scrollIntoView(false);
             });
