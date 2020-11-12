@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Simple Group Chat on Node.js</title>
+    <title>Epic Chat!</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font: 13px Helvetica, Arial; position: relative; min-height: 100vh; background-color: lightslategray }
@@ -18,12 +18,13 @@
 
     <script src="../../socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="scripts/purify.min.js"></script>
   </head>
   <body>
     <ul id="messages"></ul>
     <form action="/" method="POST" id="chatForm">
-      <input id="txt" autocomplete="off" autofocus="on" oninput="isTyping()" placeholder="type your message here..." /><button>Send</button>
+      <input id="txt" autocomplete="off" autofocus="on" oninput="isTyping()" placeholder="type your message here..." > </input><button>Send</button>
     </form>
     <script>
             var socket = io.connect(location.host);
@@ -45,10 +46,21 @@
                     username = temp
                     socket.emit('nickname', username);
                   } else {
-                    socket.emit('command', command);
+                    if (command == "clear"){
+                        $('#messages').empty()
+                    } else{ 
+                    if (command == "help") {
+                      $('#messages').append($('<li>').html("Client Side Commands: <br> /clear - Clears the chat"));
+                      socket.emit('command', command);
+                    } else {
+                      socket.emit('command', command);
+                    }
+                    }
                   }
                 } else {
-                  socket.emit('chat_message', $('#txt').val());
+                  var text = $('#txt').val()
+                  text = marked(text)
+                  socket.emit('chat_message', text);
                 }
                 $('#txt').val('');
                 return false;
@@ -57,6 +69,9 @@
             // append the chat text message
             socket.on('chat_message', function(msg){
                 $('#messages').append($('<li>').html(clean(msg)));
+                if (document.hidden) {
+                  document.title = "New message!"
+                }
                 document.body.scrollIntoView(false);
             });
             socket.on('command_feedback', function(msg){
@@ -67,11 +82,22 @@
             // append text if someone is online
             socket.on('is_online', function(username) {
                 $('#messages').append($('<li>').html(clean(username)));
+                if (document.hidden) {
+                  document.title = "Someone joined or left!"
+                }
                 document.body.scrollIntoView(false);
             });
+            function resetTitle() {
+              if (!document.hidden) {
+                document.title = "Epic Chat!"
+              }
+            }
+
             // ask username
             var username = prompt('Please tell me your name');
             socket.emit('join', username);
+            document.addEventListener("visibilitychange", resetTitle, false);
+
     </script>
   </body>
 </html>
