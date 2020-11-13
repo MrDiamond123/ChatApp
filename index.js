@@ -1,8 +1,18 @@
 const express = require('express');
 const app = express();
 
+const session = require('express-session')
+
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+
+const sessionMiddleware = session({ secret: 'cactus potato', cookie: { maxAge: 60000}})
+
+app.use(sessionMiddleware)
+
+io.use((socket, next) => {
+    sessionMiddleware(socket.request, {}, next);
+})
 
 const command_help = 'Server Commands: \
 <br> help | Shows you the list of commands! \
@@ -20,16 +30,16 @@ app.use('/media', express.static(__dirname + '/media'));
 io.sockets.on('connection', function(socket) {
     socket.on('join', function(username) {
         socket.username = username;
-        io.emit('is_online', '🔵 <i>' + socket.username + ' joined the chat..</i>');
+        io.emit('user_connected', socket.username);
         console.log('🔵 ' + socket.username + ' joined the chat ')
     });
 
     socket.on('disconnect', function(username) {
-        io.emit('is_online', '🔴 <i>' + socket.username + ' left the chat..</i>');
+        io.emit('user_disconnected', socket.username);
         console.log('🔴 ' + socket.username + ' left the chat')
     })
     socket.on('nickname', function(username) {
-        io.emit('is_online', '<i>' + socket.username + ' has changed their name to ' + username +  '</i>');
+        io.emit('user_changed_nickname', socket.username, username);
         console.log(socket.username + ' has changed their name to ' + username)
         socket.username = username;
     })
@@ -52,9 +62,10 @@ io.sockets.on('connection', function(socket) {
         }
     })
     socket.on('chat_message', function(message) {
-        io.emit('chat_message', '<strong>' + socket.username + '</strong>: ' + message);
+        io.emit('chat_message', socket.username, message);
         console.log(socket.username + ' : ' + message)
     });
+    
 
 });
 
