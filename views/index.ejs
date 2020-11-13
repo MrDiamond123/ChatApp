@@ -70,7 +70,7 @@
                 return false;
             });
 
-            // append the chat text message
+            // When someone sends a message
             socket.on('chat_message', function(username, message){
                 $('#messages').append($('<li>').html("<strong>" + clean(username) + "</strong>"+ " : " + clean(message)));
                 if (document.hidden) {
@@ -79,12 +79,14 @@
                 }
                 document.body.scrollIntoView(false);
             });
+            // When you get feedback from the command you ran
             socket.on('command_feedback', function(msg){
                 console.debug(msg)
                 $('#messages').append($('<li>').html(clean(msg)));
                 document.body.scrollIntoView(false);
             });
-            // append text if someone is online
+
+            // When someone connects
             socket.on('user_connected', function(username) {
                 $('#messages').append($('<li>').html(clean(username) + " connected"));
                 if (document.hidden) {
@@ -94,6 +96,7 @@
                 document.body.scrollIntoView(false);
             });
             
+            //When someone leaves
             socket.on('user_disconnected', function(username) {
                 $('#messages').append($('<li>').html(clean(username) + " disconnected"));
                 if (document.hidden) {
@@ -103,6 +106,7 @@
                 document.body.scrollIntoView(false);
             });
             
+            //When someone changes their nickname
             socket.on('user_changed_nickname', function(oldname, newname) {
                 $('#messages').append($('<li>').html(clean(oldname) + " is now " + clean(newname)));
                 if (document.hidden) {
@@ -112,7 +116,7 @@
                 document.body.scrollIntoView(false);
             });
             
-
+            
             function resetTitle() {
               if (!document.hidden) {
                 document.title = "Epic Chat!"
