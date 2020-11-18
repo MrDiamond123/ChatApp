@@ -9,9 +9,10 @@
         form input { border-style: solid; border-width: 1px; padding: 10px; width: 90%; }
         form button { width: 10%; background: rgb(86, 101, 235); border: none; padding: 10px; }
         #messages { list-style-type: none; margin: 0; padding-bottom: 2.5rem; }
-        #messages li { padding: 5px 10px; background: lightgray}
-        #messages li:nth-child(odd) { background: darkgray; }
-
+        #messages li{ padding: 5px 10px; background: white}
+        #messages .message {background: lightgray}
+        #messages .message:nth-child(odd) { background: darkgray; }
+        
     </style>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,6 +31,8 @@
             var messageSound = new Audio("media/Message_Sound.wav");
             var joinleaveSound = new Audio("media/JoinedLeave.wav");
             var joinedSound = new Audio("media/Join_Sound.wav");
+
+            var username;
 
             var socket = io.connect(location.host);
             function clean(dirty) {
@@ -50,6 +53,11 @@
                     username = temp
                     socket.emit('nickname', username);
                   } else {
+                    if(command == "shrug") {
+                      socket.emit('chat_message', '¯\\_(ツ)_/¯')
+                    } else { if(command == "tableflip") {
+                      socket.emit('chat_message', '(╯°□°）╯︵ ┻━┻')
+                    } else {
                     if (command == "clear"){
                         $('#messages').empty()
                     } else{ 
@@ -60,6 +68,7 @@
                       socket.emit('command', command);
                     }
                     }
+                  }}
                   }
                 } else {
                   var text = $('#txt').val()
@@ -72,7 +81,7 @@
 
             // When someone sends a message
             socket.on('chat_message', function(username, message){
-                $('#messages').append($('<li>').html("<strong>" + clean(username) + "</strong>"+ " : " + clean(message)));
+                $('#messages').append($('<li class="message">').html("<strong>" + clean(username) + "</strong>"+ " : " + clean(message)));
                 if (document.hidden) {
                   document.title = clean(username) + " sent a message."
                   messageSound.play()
@@ -82,13 +91,19 @@
             // When you get feedback from the command you ran
             socket.on('command_feedback', function(msg){
                 console.debug(msg)
-                $('#messages').append($('<li>').html(clean(msg)));
+                $('#messages').append($('<li class="feedback">').html(clean(msg)));
+                document.body.scrollIntoView(false);
+            });
+
+            socket.on('trusted_command_feedback', function(msg){
+                console.debug(msg)
+                $('#messages').append($('<li class="feedback">').html(msg));
                 document.body.scrollIntoView(false);
             });
 
             // When someone connects
             socket.on('user_connected', function(username) {
-                $('#messages').append($('<li>').html(clean(username) + " connected"));
+                $('#messages').append($('<li class="feedback">').html("🟢 " + clean(username) + " connected"));
                 if (document.hidden) {
                   document.title = clean(username) + " joined!"
                   joinleaveSound.play()
@@ -98,7 +113,7 @@
             
             //When someone leaves
             socket.on('user_disconnected', function(username) {
-                $('#messages').append($('<li>').html(clean(username) + " disconnected"));
+                $('#messages').append($('<li class="feedback">').html("🔴 " + clean(username) + " disconnected"));
                 if (document.hidden) {
                   document.title = clean(username) + " left!"
                   joinleaveSound.play()
@@ -108,7 +123,7 @@
             
             //When someone changes their nickname
             socket.on('user_changed_nickname', function(oldname, newname) {
-                $('#messages').append($('<li>').html(clean(oldname) + " is now " + clean(newname)));
+                $('#messages').append($('<li class="feedback">').html(clean(oldname) + " is now " + clean(newname)));
                 if (document.hidden) {
                   document.title = clean(oldname) + " changed name."
                   joinleaveSound.play()
@@ -123,11 +138,19 @@
               }
             }
 
+            socket.on('first_join', function(){
+              username = prompt('Please tell me your name');
+              socket.emit('join', username);
+              joinedSound.play()
+            })
 
+            socket.on('join', function(usernamee){
+              username = usernamee
+              socket.emit('join', username);
+              joinedSound.play()
+            })
             // ask username
-            var username = prompt('Please tell me your name');
-            socket.emit('join', username);
-            joinedSound.play()
+
             document.addEventListener("visibilitychange", resetTitle, false);
 
     </script>

@@ -31,12 +31,24 @@ app.use('/scripts', express.static(__dirname + '/node_modules/dompurify/dist/'))
 app.use('/media', express.static(__dirname + '/media'));
 
 
-io.sockets.on('connection', function(socket) {
+io.on('connection', function(socket) {
+    const session = socket.request.session;
+
+    console.log(session.username)
+    console.log(typeof(session.username))
+    if (typeof(session.username) !== "string") {
+        socket.emit('first_join')
+    } else {
+        socket.emit('join', session.username)
+    }
+
     // When a client joins
     socket.on('join', function(username) {
+        session.username = username;
         socket.username = username;
         io.emit('user_connected', socket.username);
         console.log('🔵 ' + socket.username + ' joined the chat ')
+        session.save();
     });
 
     //When a client leaves
@@ -49,7 +61,10 @@ io.sockets.on('connection', function(socket) {
     socket.on('nickname', function(username) {
         io.emit('user_changed_nickname', socket.username, username);
         console.log(socket.username + ' has changed their name to ' + username)
+        session.username = username;
         socket.username = username;
+
+        session.save();
     })
 
     //When a client runs a command
@@ -68,6 +83,9 @@ io.sockets.on('connection', function(socket) {
                 list = list + "</i>"
                 socket.emit('command_feedback', list);
                 break;
+            case "session":
+                socket.emit('trusted_command_feedback', session)
+                break;
             default:
                 socket.emit('command_feedback', command + " isn't a command!");
         }
@@ -75,7 +93,7 @@ io.sockets.on('connection', function(socket) {
 
     // When a client sends a message 
     socket.on('chat_message', function(message) {
-        io.emit('chat_message', socket.username, message);
+        io.emit('chat_message', session.username, message);
         console.log(socket.username + ' : ' + message)
     });
     
