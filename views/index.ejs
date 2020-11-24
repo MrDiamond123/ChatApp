@@ -53,22 +53,18 @@
                     username = temp
                     socket.emit('nickname', username);
                   } else {
-                    if(command == "shrug") {
-                      socket.emit('chat_message', '¯\\_(ツ)_/¯')
-                    } else { if(command == "tableflip") {
-                      socket.emit('chat_message', '(╯°□°）╯︵ ┻━┻')
-                    } else {
-                    if (command == "clear"){
+                    switch (command) {
+                      case "shrug": 
+                        socket.emit('chat_message', '¯\\_(ツ)_/¯')
+                        break;
+                      case "clear":
                         $('#messages').empty()
-                    } else{ 
-                    if (command == "help") {
-                      $('#messages').append($('<li>').html("Client Side Commands: <br> /clear - Clears the chat"));
-                      socket.emit('command', command);
-                    } else {
-                      socket.emit('command', command);
+                        break;
+                      case "help":
+                        $('#messages').append($('<li>').html("Client Side Commands: <br> /clear - Clears the chat"));
+                      default:
+                        socket.emit('command', command);
                     }
-                    }
-                  }}
                   }
                 } else {
                   var text = $('#txt').val()
