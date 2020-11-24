@@ -21,8 +21,7 @@
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/markdown-it@12/index.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@12.0.2/dist/markdown-it.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/markdown-it-emoji@2/dist/markdown-it-emoji.js"></script>
  
@@ -34,10 +33,7 @@
       <input id="txt" autocomplete="off" autofocus="on" oninput="isTyping()" placeholder="type your message here..." > </input><button>Send</button>
     </form>
     <script>
-            var md = window.markdownit('zero').use(window.markdownitEmoji).enable(['image', 'strikethrough', 'emphasis', ''])
-
-
-
+            
             var messageSound = new Audio("media/Message_Sound.wav");
             var joinleaveSound = new Audio("media/JoinedLeave.wav");
             var joinedSound = new Audio("media/Join_Sound.wav");
@@ -45,6 +41,8 @@
             var username;
 
             var socket = io.connect(location.host);
+            var md = window.markdownit('zero').use(window.markdownitEmoji).enable(['image', 'strikethrough', 'emphasis']);
+
             function clean(dirty) {
               var clean = DOMPurify.sanitize(dirty);
               return clean;
@@ -158,7 +156,6 @@
             // ask username
 
             document.addEventListener("visibilitychange", resetTitle, false);
-
     </script>
   </body>
 </html>
