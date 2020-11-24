@@ -20,6 +20,12 @@
     <script src="../../socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@12/index.min.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-emoji@2/dist/markdown-it-emoji.js"></script>
+ 
     <script src="scripts/purify.min.js"></script>
   </head>
   <body>
@@ -28,6 +34,10 @@
       <input id="txt" autocomplete="off" autofocus="on" oninput="isTyping()" placeholder="type your message here..." > </input><button>Send</button>
     </form>
     <script>
+            var md = window.markdownit('zero').use(window.markdownitEmoji).enable(['image', 'strikethrough', 'emphasis', ''])
+
+
+
             var messageSound = new Audio("media/Message_Sound.wav");
             var joinleaveSound = new Audio("media/JoinedLeave.wav");
             var joinedSound = new Audio("media/Join_Sound.wav");
@@ -68,7 +78,7 @@
                   }
                 } else {
                   var text = $('#txt').val()
-                  text = marked(text)
+                  text = md.renderInline(text)
                   socket.emit('chat_message', text);
                 }
                 $('#txt').val('');
