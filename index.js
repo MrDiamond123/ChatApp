@@ -1,3 +1,7 @@
+const fs = require('fs')
+
+const blockedIPSFile = './blocked.json'
+
 const express = require('express');
 const app = express();
 
@@ -20,9 +24,37 @@ const command_help = 'Server Commands: \
 <br> nick | Allows you to change your nickname \
 <br> list | Shows you the list of everyone currently in the chat!'
 
+
+try {
+    if(fs.existsSync(blockedIPSFile)) {
+        fs.readFile(blockedIPSFile, (err, data) => {
+            if (err) throw err;
+            let blockedIPS = JSON.parse(data)
+            console.log(blockedIPS)
+        })
+    }
+} catch(err) {
+    console.error(err)
+    let blockedIPS = []
+}
+
+
 app.get('/', function(req, res) {
-    console.log(req.ip);
-    res.render('index.ejs');
+    var request_ip = req.ip 
+            || req.connection.remoteAddress 
+            || req.socket.remoteAddress 
+            || req.connection.socket.remoteAddress;
+
+    if (blockedIPS.includes(request_ip)) {
+        console.log("🚫 Blocked IP", request_ip, " attempted to connect!")
+        setTimeout(function() {
+            res.redirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+        }, 5000);
+    } else {
+        console.log(req.ip);
+        res.render('index.ejs');
+    }
+
 });
 
 

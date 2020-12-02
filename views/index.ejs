@@ -4,15 +4,18 @@
     <title>Epic Chat!</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font: 13px Helvetica, Arial; position: relative; min-height: 100vh; background-color: lightslategray }
+        body { font: 18px 'Noto Sans', Helvetica, Arial; position: relative; min-height: 100vh; background-color: lightslategray }
         form { display: inline-flex; background: rgb(121, 118, 118); height: 2.5rem; position: absolute; bottom: 0; width: 100%; border-color: #000; border-top-style: solid; border-top-width: 1px;}
         form input { border-style: solid; border-width: 1px; padding: 10px; width: 90%; }
-        form button { width: 10%; background: rgb(86, 101, 235); border: none; padding: 10px; }
+        form button { width: 10%; background: #717fff; border: none; padding: 10px; }
         #messages { list-style-type: none; margin: 0; padding-bottom: 2.5rem; }
         #messages li{ padding: 5px 10px; background: white}
-        #messages .message {background: lightgray}
-        #messages .message:nth-child(odd) { background: darkgray; }
-        
+
+        #messages .feedback {background: whitesmoke; color: darkslategrey}
+
+        #messages .message {background: white}
+        #messages .message:nth-child(odd) { background: lightgray }
+    
     </style>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,7 +44,7 @@
             var username;
 
             var socket = io.connect(location.host);
-            var md = window.markdownit('zero').use(window.markdownitEmoji).enable(['image', 'strikethrough', 'emphasis']);
+            var md = window.markdownit('zero').use(window.markdownitEmoji, {"shortcuts": []}).enable(['image', 'strikethrough', 'emphasis', 'linkify']);
 
             function clean(dirty) {
               var clean = DOMPurify.sanitize(dirty);
@@ -69,7 +72,7 @@
                         $('#messages').empty()
                         break;
                       case "help":
-                        $('#messages').append($('<li>').html("Client Side Commands: <br> /clear - Clears the chat"));
+                        $('#messages').append($('<li class="feedback">').html("Client Side Commands: <br> /clear - Clears the chat"));
                       default:
                         socket.emit('command', command);
                     }
@@ -85,7 +88,7 @@
 
             // When someone sends a message
             socket.on('chat_message', function(username, message){
-                $('#messages').append($('<li class="message">').html("<strong>" + clean(username) + "</strong>"+ " : " + clean(message)));
+                $('#messages').append($('<li class="message">').html("<strong>" + clean(username) + "</strong>"+ "   " + clean(message)));
                 if (document.hidden) {
                   document.title = clean(username) + " sent a message."
                   messageSound.play()
