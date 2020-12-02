@@ -7,11 +7,11 @@ This is a simple chat website made with NodeJS
 * It 'works'
 
 ## Installation
-* git clone https://github.com/MrDiamond123/ChatApp
-* npm install
+* `git clone https://github.com/MrDiamond123/ChatApp`
+* `npm install`
 
 ## Running it
-* node index.js
+* `node index.js`
 
 ## Things I want to add
 * Attachments
