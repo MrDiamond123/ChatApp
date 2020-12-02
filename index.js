@@ -10,6 +10,8 @@ const session = require('express-session')
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
+let blockedIPS = []
+
 //TODO: Actually add sessions
 const sessionMiddleware = session({ secret: 'cactus potato', cookie: { maxAge: 60000}})
 
@@ -29,13 +31,12 @@ try {
     if(fs.existsSync(blockedIPSFile)) {
         fs.readFile(blockedIPSFile, (err, data) => {
             if (err) throw err;
-            let blockedIPS = JSON.parse(data)
+            blockedIPS = JSON.parse(data)
             console.log(blockedIPS)
         })
     }
 } catch(err) {
     console.error(err)
-    let blockedIPS = []
 }
 
 
