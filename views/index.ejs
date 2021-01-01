@@ -4,15 +4,18 @@
     <title>Epic Chat!</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font: 13px Helvetica, Arial; position: relative; min-height: 100vh; background-color: lightslategray }
+        body { font: 18px 'Noto Sans', Helvetica, Arial; position: relative; min-height: 100vh; background-color: lightslategray }
         form { display: inline-flex; background: rgb(121, 118, 118); height: 2.5rem; position: absolute; bottom: 0; width: 100%; border-color: #000; border-top-style: solid; border-top-width: 1px;}
         form input { border-style: solid; border-width: 1px; padding: 10px; width: 90%; }
-        form button { width: 10%; background: rgb(86, 101, 235); border: none; padding: 10px; }
+        form button { width: 10%; background: #717fff; border: none; padding: 10px; }
         #messages { list-style-type: none; margin: 0; padding-bottom: 2.5rem; }
         #messages li{ padding: 5px 10px; background: white}
-        #messages .message {background: lightgray}
-        #messages .message:nth-child(odd) { background: darkgray; }
-        
+
+        #messages .feedback {background: whitesmoke; color: darkslategrey}
+
+        #messages .message {background: white}
+        #messages .message:nth-child(odd) { background: lightgray }
+    
     </style>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,6 +23,11 @@
     <script src="../../socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@12.0.2/dist/markdown-it.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-emoji@2/dist/markdown-it-emoji.js"></script>
+ 
     <script src="scripts/purify.min.js"></script>
   </head>
   <body>
@@ -28,6 +36,7 @@
       <input id="txt" autocomplete="off" autofocus="on" oninput="isTyping()" placeholder="type your message here..." > </input><button>Send</button>
     </form>
     <script>
+            
             var messageSound = new Audio("media/Message_Sound.wav");
             var joinleaveSound = new Audio("media/JoinedLeave.wav");
             var joinedSound = new Audio("media/Join_Sound.wav");
@@ -35,6 +44,8 @@
             var username;
 
             var socket = io.connect(location.host);
+            var md = window.markdownit('zero').use(window.markdownitEmoji, {"shortcuts": []}).enable(['image', 'strikethrough', 'emphasis', 'linkify']);
+
             function clean(dirty) {
               var clean = DOMPurify.sanitize(dirty);
               return clean;
@@ -53,26 +64,22 @@
                     username = temp
                     socket.emit('nickname', username);
                   } else {
-                    if(command == "shrug") {
-                      socket.emit('chat_message', '¯\\_(ツ)_/¯')
-                    } else { if(command == "tableflip") {
-                      socket.emit('chat_message', '(╯°□°）╯︵ ┻━┻')
-                    } else {
-                    if (command == "clear"){
+                    switch (command) {
+                      case "shrug": 
+                        socket.emit('chat_message', '¯\\_(ツ)_/¯')
+                        break;
+                      case "clear":
                         $('#messages').empty()
-                    } else{ 
-                    if (command == "help") {
-                      $('#messages').append($('<li>').html("Client Side Commands: <br> /clear - Clears the chat"));
-                      socket.emit('command', command);
-                    } else {
-                      socket.emit('command', command);
+                        break;
+                      case "help":
+                        $('#messages').append($('<li class="feedback">').html("Client Side Commands: <br> /clear - Clears the chat"));
+                      default:
+                        socket.emit('command', command);
                     }
-                    }
-                  }}
                   }
                 } else {
                   var text = $('#txt').val()
-                  text = marked(text)
+                  text = md.renderInline(text)
                   socket.emit('chat_message', text);
                 }
                 $('#txt').val('');
@@ -81,7 +88,7 @@
 
             // When someone sends a message
             socket.on('chat_message', function(username, message){
-                $('#messages').append($('<li class="message">').html("<strong>" + clean(username) + "</strong>"+ " : " + clean(message)));
+                $('#messages').append($('<li class="message">').html("<strong>" + clean(username) + "</strong>"+ "   " + clean(message)));
                 if (document.hidden) {
                   document.title = clean(username) + " sent a message."
                   messageSound.play()
@@ -152,7 +159,6 @@
             // ask username
 
             document.addEventListener("visibilitychange", resetTitle, false);
-
     </script>
   </body>
 </html>
